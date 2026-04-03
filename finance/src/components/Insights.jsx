@@ -1,51 +1,52 @@
 import React from "react";
 import { useStore } from "../store/useStore";
-import SummaryCard from "./SummaryCard";
+import {
+  formatCurrency,
+  getFinancialSummary,
+  getMonthlyExpenseComparison,
+  getTopSpendingCategory,
+} from "../utils/finance";
 
 const Insights = () => {
   const { transactions } = useStore();
+  const summary = getFinancialSummary(transactions);
+  const topCategory = getTopSpendingCategory(transactions);
+  const monthComparison = getMonthlyExpenseComparison(transactions);
 
-  const totalIncome = transactions
-    .filter((t) => t.type === "income")
-    .reduce((acc, t) => acc + t.amount, 0);
+  const savingsRate = summary.income
+    ? Math.round(((summary.income - summary.expense) / summary.income) * 100)
+    : 0;
 
-  const totalExpense = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((acc, t) => acc + t.amount, 0);
-
-  const numTransactions = transactions.length;
-
-  const avgExpense =
-    totalExpense / (transactions.filter((t) => t.type === "expense").length || 1);
-
-  // 🔹 Calculate highest spending category
-  const expenseTransactions = transactions.filter((t) => t.type === "expense");
-  const categoryTotals = {};
-  expenseTransactions.forEach((t) => {
-    categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
-  });
-
-  let highestCategory = "N/A";
-  let highestAmount = 0;
-  for (let [cat, amt] of Object.entries(categoryTotals)) {
-    if (amt > highestAmount) {
-      highestCategory = cat;
-      highestAmount = amt;
-    }
-  }
+  const observation =
+    savingsRate >= 30
+      ? "Strong savings momentum this quarter."
+      : savingsRate >= 10
+        ? "Spending is manageable, but there is room to optimize fixed costs."
+        : "Spending is close to income. Reducing top discretionary categories may help.";
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 my-6">
-      <SummaryCard title="Total Income" amount={totalIncome} color="bg-blue-500" />
-      <SummaryCard title="Total Expenses" amount={totalExpense} color="bg-red-500" />
-      <SummaryCard title="Transactions" amount={numTransactions} color="bg-purple-500" />
-      <SummaryCard title="Avg Expense" amount={Math.round(avgExpense)} color="bg-yellow-500" />
-      <SummaryCard
-        title="Highest Spending Category"
-        amount={highestAmount}
-        color="bg-pink-500"
-        subtitle={highestCategory}
-      />
+    <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+      <article className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-200">Highest Spending Category</p>
+        <p className="mt-3 text-xl font-bold text-slate-900 dark:text-slate-50">{topCategory.category}</p>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-100">{formatCurrency(topCategory.amount)} total outflow</p>
+      </article>
+
+      <article className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-200">Monthly Expense Comparison</p>
+        <p className="mt-3 text-xl font-bold text-slate-900 dark:text-slate-50">
+          {monthComparison.trend === "down" ? "Decreased" : monthComparison.trend === "up" ? "Increased" : "Flat"}
+        </p>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-100">
+          Current: {formatCurrency(monthComparison.current)} | Previous: {formatCurrency(monthComparison.previous)}
+        </p>
+      </article>
+
+      <article className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-200">Useful Observation</p>
+        <p className="mt-3 text-xl font-bold text-slate-900 dark:text-slate-50">Savings rate: {savingsRate}%</p>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-100">{observation}</p>
+      </article>
     </div>
   );
 };

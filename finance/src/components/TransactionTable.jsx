@@ -1,54 +1,66 @@
 import React from "react";
-import { useStore } from "../store/useStore";
+import { formatCurrency, formatDate } from "../utils/finance";
 
-const TransactionTable = ({ darkMode }) => {
-  const { transactions, filter, searchTerm, sortBy } = useStore();
-
-  let filteredTransactions = transactions.filter((tx) => {
-    return (filter === "all" || tx.type === filter) &&
-           (searchTerm === "" || tx.category.toLowerCase().includes(searchTerm.toLowerCase()));
-  });
-
-  if (sortBy === "amount") {
-    filteredTransactions.sort((a, b) => b.amount - a.amount);
-  } else if (sortBy === "date") {
-    filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+const TransactionTable = ({ transactions, canEdit, onEdit, darkMode = false }) => {
+  if (!transactions.length) {
+    return (
+      <div className="rounded-2xl border border-dashed border-slate-300 bg-white/80 px-4 py-12 text-center dark:border-slate-700 dark:bg-slate-900/70">
+        <p className="text-lg font-semibold text-slate-700 dark:text-slate-100">No transactions match your filters</p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-100">Try changing search, type, or sorting options.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className={`min-w-full text-left border ${darkMode ? "text-white" : "text-gray-900"}`}>
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+      <table className="min-w-full text-left text-sm text-slate-700 dark:text-slate-100">
         <thead>
-          <tr className={`${darkMode ? "bg-gray-700" : "bg-gray-100"}`}>
-            <th className="px-4 py-2">Date</th>
-            <th className="px-4 py-2">Category</th>
-            <th className="px-4 py-2">Type</th>
-            <th className="px-4 py-2">Amount</th>
+          <tr className="bg-slate-50/80 text-xs uppercase tracking-[0.14em] text-slate-500 dark:bg-slate-800/70 dark:text-slate-200">
+            <th className="px-5 py-4">Date</th>
+            <th className="px-5 py-4">Category</th>
+            <th className="px-10 py-4">Type</th>
+            <th className="px-5 py-4 text-right">Amount</th>
+            {canEdit ? <th className="px-5 py-4 text-right">Action</th> : null}
           </tr>
         </thead>
         <tbody>
-          {filteredTransactions.length > 0 ? (
-            filteredTransactions.map((tx, idx) => (
-              <tr
-                key={tx.id}
-                className={`border-b ${darkMode
-                  ? idx % 2 === 0 ? "bg-gray-800" : "bg-gray-700"
-                  : idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                } hover:${darkMode ? "bg-gray-600" : "bg-gray-100"}`}
-              >
-                <td className="px-4 py-2">{tx.date}</td>
-                <td className="px-4 py-2">{tx.category}</td>
-                <td className="px-4 py-2">{tx.type}</td>
-                <td className="px-4 py-2">₹{tx.amount}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" className="text-center text-gray-400 py-4">
-                No data available
+          {transactions.map((tx, index) => (
+            <tr
+              key={tx.id}
+              className={`border-t border-slate-200 transition hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/60 ${
+                index % 2 === 0 ? "" : "bg-slate-50/70 dark:bg-slate-800/40"
+              }`}
+            >
+              <td className="px-5 py-4 font-medium text-slate-800 dark:text-slate-50">{formatDate(tx.date)}</td>
+              <td className="px-5 py-4 text-slate-800 dark:text-slate-50">{tx.category}</td>
+              <td className="px-5 py-4">
+                <span
+                  className={`rounded-full px-5 py-1 text-xs font-semibold ${
+                    tx.type === "income"
+                      ? "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-200"
+                      : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"
+                  }`}
+                >
+                  {tx.type === "income" ? "income" : "expense"}
+                </span>
               </td>
+              <td className={`px-5 py-4 text-right font-bold ${tx.type === "income" ? "text-sky-700 dark:text-sky-200" : "text-amber-700 dark:text-amber-200"}`}>
+                {tx.type === "income" ? "+" : "-"}
+                {formatCurrency(tx.amount)}
+              </td>
+              {canEdit ? (
+                <td className="px-5 py-4 text-right">
+                  <button
+                    type="button"
+                    onClick={() => onEdit(tx)}
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-500 dark:text-slate-100 dark:hover:bg-slate-700"
+                  >
+                    Edit
+                  </button>
+                </td>
+              ) : null}
             </tr>
-          )}
+          ))}
         </tbody>
       </table>
     </div>

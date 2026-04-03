@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700;800&display=swap");
+
+:root {
+	--page-bg: radial-gradient(circle at 12% 8%, #ffffff 0%, #f8fafc 50%, #f3f4f6 100%);
+	--page-bg-dark: radial-gradient(circle at 0% 0%, #1e293b 0%, #111827 58%, #0f172a 100%);
+	--teal: #475569;
+	--cobalt: #64748b;
+	--coral: #94a3b8;
+}
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: "Space Grotesk", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.font-display {
+	font-family: "Sora", "Space Grotesk", "Segoe UI", sans-serif;
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-rise {
+	animation: rise 0.5s ease-out forwards;
+}
+
+.animate-rise-delay-1 {
+	animation: rise 0.55s ease-out forwards;
+}
+
+.animate-rise-delay-2 {
+	animation: rise 0.65s ease-out forwards;
+}
+
+.animate-rise-delay-3 {
+	animation: rise 0.75s ease-out forwards;
+}
+
+.animate-rise-delay-4 {
+	animation: rise 0.85s ease-out forwards;
+}
